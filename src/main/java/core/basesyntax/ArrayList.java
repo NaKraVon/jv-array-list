@@ -4,8 +4,7 @@ import java.util.NoSuchElementException;
 
 public class ArrayList<T> implements List<T> {
     private static final int DEFAULT_CAPACITY = 10;
-    private static final int DIVIDED_BY_TWO = 1;
-    private static final int GROW_COPY_INDEX = 0;
+    private static final int GROWTH_FACTOR = 1;
     private T[] data;
     private int size;
 
@@ -81,10 +80,9 @@ public class ArrayList<T> implements List<T> {
         for (int i = 0; i < size; i++) {
             if (element == null ? data[i] == null
                     : element.equals(data[i])) {
-                for (int j = i + 1; j < size; j++) {
-                    data[j - 1] = data[j];
-                }
+                System.arraycopy(data, i + 1, data, i, size - i - 1);
                 size--;
+                data[size] = null;
                 return element;
             }
         }
@@ -103,13 +101,13 @@ public class ArrayList<T> implements List<T> {
 
     @SuppressWarnings("unchecked")
     private void growIfArrayFull() {
-        int newCapacity = data.length + (data.length >> DIVIDED_BY_TWO);
+        int newCapacity = data.length + (data.length >> GROWTH_FACTOR);
         T[] bufferArr = data;
         if (newCapacity < data.length) { // Check for overflow
             newCapacity = Integer.MAX_VALUE;
         }
         this.data = (T[]) new Object[newCapacity];
-        System.arraycopy(bufferArr, GROW_COPY_INDEX, this.data, GROW_COPY_INDEX, bufferArr.length);
+        System.arraycopy(bufferArr, 0, this.data, 0, bufferArr.length);
     }
 
     private void checkRange(int index) {
