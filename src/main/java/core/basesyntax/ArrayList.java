@@ -1,11 +1,11 @@
 package core.basesyntax;
 
-import java.util.Arrays;
 import java.util.NoSuchElementException;
-import java.util.Objects;
 
 public class ArrayList<T> implements List<T> {
     private static final int DEFAULT_CAPACITY = 10;
+    private static final int DIVIDED_BY_TWO = 1;
+    private static final int GROW_COPY_INDEX = 0;
     private T[] data;
     private int size;
 
@@ -18,7 +18,7 @@ public class ArrayList<T> implements List<T> {
     @Override
     public void add(T value) {
         if (size == data.length) {
-            grow();
+            growIfArrayFull();
         }
         data[size] = value;
         size++;
@@ -29,7 +29,7 @@ public class ArrayList<T> implements List<T> {
         checkRangeForAdd(index);
 
         if (size == data.length) {
-            grow();
+            growIfArrayFull();
         }
         if (size - index > 0) {
             System.arraycopy(data, index, data, index + 1, size - index);
@@ -41,12 +41,8 @@ public class ArrayList<T> implements List<T> {
 
     @Override
     public void addAll(List<T> list) {
-        if (data.length - size < list.size()) {
-            int newCapacity = data.length + (list.size() - (data.length - size));
-            if (newCapacity < data.length) { // Check for overflow
-                newCapacity = Integer.MAX_VALUE;
-            }
-            this.data = Arrays.copyOf(data, newCapacity);
+        while (data.length - size < list.size()) {
+            growIfArrayFull();
         }
 
         for (int i = 0; i < list.size(); i++) {
@@ -83,7 +79,8 @@ public class ArrayList<T> implements List<T> {
     @Override
     public T remove(T element) {
         for (int i = 0; i < size; i++) {
-            if (Objects.equals(element, data[i])) {
+            if (element == null ? data[i] == null
+                    : element.equals(data[i])) {
                 for (int j = i + 1; j < size; j++) {
                     data[j - 1] = data[j];
                 }
@@ -104,12 +101,15 @@ public class ArrayList<T> implements List<T> {
         return size == 0;
     }
 
-    private void grow() {
-        int newCapacity = data.length + (data.length >> 1);
+    @SuppressWarnings("unchecked")
+    private void growIfArrayFull() {
+        int newCapacity = data.length + (data.length >> DIVIDED_BY_TWO);
+        T[] bufferArr = data;
         if (newCapacity < data.length) { // Check for overflow
             newCapacity = Integer.MAX_VALUE;
         }
-        this.data = Arrays.copyOf(data, newCapacity);
+        this.data = (T[]) new Object[newCapacity];
+        System.arraycopy(bufferArr, GROW_COPY_INDEX, this.data, GROW_COPY_INDEX, bufferArr.length);
     }
 
     private void checkRange(int index) {
