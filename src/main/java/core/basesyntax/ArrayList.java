@@ -33,7 +33,6 @@ public class ArrayList<T> implements List<T> {
         if (size - index > 0) {
             System.arraycopy(data, index, data, index + 1, size - index);
         }
-
         data[index] = value;
         size++;
     }
